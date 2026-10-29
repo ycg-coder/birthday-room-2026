@@ -1,0 +1,6 @@
+# 本地开发/私密资源：绝不进库（含明文信文案、加密构建脚本、原始大模型）
+test/
+node_modules/
+.workbuddy/
+*.log
+.DS_Store
