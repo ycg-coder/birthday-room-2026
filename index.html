@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4ece1">
+<meta name="description" content="一间藏着心意的小屋。输入专属暗号，慢慢发现门后的故事。">
+<title>一扇小门 · 一点心意</title>
+<link rel="icon" href="data:,"> <!-- 空 favicon：避免浏览器自动请求 404 -->
+<link rel="stylesheet" href="./css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./lib/three.module.js",
+    "three/addons/": "./lib/addons/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app" class="room-empty">
+  <canvas id="scene-canvas"></canvas>
+
+  <!-- 加载遮罩 -->
+  <div id="loading">
+    <div class="load-card">
+      <div class="load-cake">
+        <div class="load-cake-top"></div>
+        <div class="load-cake-body"></div>
+        <div class="load-cake-plate"></div>
+      </div>
+      <div class="load-title">正在布置生日客厅…</div>
+      <div class="load-bar"><div class="load-bar-fill" id="load-fill"></div></div>
+      <div class="load-tip" id="load-tip">充好奶油，准备裱花</div>
+    </div>
+  </div>
+
+  <!-- 标题卡片 -->
+  <header id="title-card">
+    <div class="title-row">
+      <span class="title-emoji">🎂</span>
+      <div class="title-text">
+        <h1>生日惊喜客厅</h1>
+        <p>Creamy Birthday Living Room · 20</p>
+      </div>
+    </div>
+  <p class="title-sub">轻轻点一下物件，慢慢发现藏在小屋里的心意。</p>
+</header>
+
+<!-- 轻量探索提示：不把所有彩蛋一次性剧透，留空间给场景本身。 -->
+<div id="hint-bar">
+  <div class="hint-item hint-static"><span class="hint-dot dot-cake"></span>轻触物件，发现小彩蛋</div>
+  <div class="hint-item hint-static"><span class="hint-dot dot-bouquet"></span>拖动视角，慢慢探索</div>
+  <div class="hint-item hint-static"><span class="hint-dot dot-window"></span>窗外还藏着一点惊喜</div>
+</div>
+
+  <!-- 控制栏（仅保留可选的麦克风吹气与音效开关） -->
+  <div id="control-bar">
+    <button id="btn-mic" class="ctl-btn" type="button">🎤 麦克风吹气（可选）</button>
+    <button id="btn-mute" class="ctl-btn" type="button">🔊 音效开</button>
+    <button id="btn-view" class="ctl-btn" type="button">📷 复位视角</button>
+  </div>
+
+  <!-- 独立物品展台：背景虚化，物品单独放大展示 -->
+  <aside id="inspect-card" class="inspect-card" hidden role="dialog" aria-modal="true" aria-labelledby="inspect-title">
+    <div class="inspect-backdrop" id="inspect-backdrop"></div>
+    <section class="inspect-panel">
+      <button id="btn-inspect-close" class="inspect-close" type="button" aria-label="关闭展示">×</button>
+      <div class="inspect-stage"><div class="inspect-stage-aura"></div><canvas id="inspect-model-canvas" aria-label="可拖动旋转的物品模型"></canvas><div class="inspect-model-hint">拖动查看细节</div></div>
+      <div class="inspect-copy-block"><div class="inspect-kicker"><span class="inspect-kicker-dot"></span> LITTLE DETAILS</div><h2 id="inspect-title">一份小小的心意</h2><p id="inspect-copy">慢慢看，每个细节都值得。</p><div class="inspect-actions"><button id="btn-inspect-action" class="inspect-action" type="button" hidden>打开信封</button><button id="btn-inspect-back" class="inspect-back" type="button">返回房间</button></div></div>
+    </section>
+  </aside>
+
+  <!-- 轻提示 -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- 全屏 HTML/CSS 大门：不使用 3D 门模型，也不依赖图片 -->
+  <section id="gate" aria-label="大门入口">
+    <div class="gate-ambient gate-ambient-left" aria-hidden="true"></div>
+    <div class="gate-ambient gate-ambient-right" aria-hidden="true"></div>
+    <div class="gate-grain" aria-hidden="true"></div>
+
+    <div class="gate-wordmark" aria-hidden="true">
+      <span class="gate-wordmark-rule"></span>
+      <span class="gate-wordmark-main">A LITTLE WORLD</span>
+      <span class="gate-wordmark-sub">A QUIET SECRET, MADE WITH CARE</span>
+      <span class="gate-wordmark-rule"></span>
+    </div>
+
+    <div class="gate-frame" aria-hidden="true">
+      <div class="gate-frame-inner"></div>
+      <div class="gate-door-set" id="gate-door-set">
+        <div class="gate-door-leaf gate-door-left">
+          <span class="gate-door-inlay gate-door-inlay-outer"></span>
+          <span class="gate-door-panel gate-door-panel-upper"></span>
+          <span class="gate-door-panel gate-door-panel-lower"></span>
+          <span class="gate-door-bottom-line"></span>
+        </div>
+        <div class="gate-door-leaf gate-door-right">
+          <span class="gate-door-inlay gate-door-inlay-outer"></span>
+          <span class="gate-door-panel gate-door-panel-upper"></span>
+          <span class="gate-door-panel gate-door-panel-lower"></span>
+          <span class="gate-door-bottom-line"></span>
+        </div>
+        <div class="gate-door-seam"></div>
+      </div>
+      <div class="gate-hinge gate-hinge-left" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="gate-hinge gate-hinge-right" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="gate-lock-assembly">
+        <span class="gate-lock-chain" aria-hidden="true"></span>
+        <span class="gate-lock-backplate" aria-hidden="true"></span>
+        <button id="gate-lock" class="gate-lock-button" type="button" aria-label="轻轻点击门锁" aria-expanded="false" aria-controls="gate-entry">
+          <span class="gate-lock-crown" aria-hidden="true"></span>
+          <span class="gate-lock-heart" aria-hidden="true">♥</span>
+          <span class="gate-lock-keyhole" aria-hidden="true"></span>
+        </button>
+        <span class="gate-handle" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <div class="gate-copy-panel">
+      <div class="gate-copy-overline">
+        <span class="gate-status-dot" aria-hidden="true"></span>
+        <span id="gate-overline">PRIVATE ENTRY · IN PREPARATION</span>
+      </div>
+      <h1 class="gate-title" id="gate-title">这扇门暂时还没准备好</h1>
+      <p class="gate-sub" id="gate-copy">轻轻碰一下门锁，听听里面在忙什么。</p>
+      <div class="gate-msg" id="gate-msg" role="status" aria-live="polite"></div>
+
+      <div class="gate-entry" id="gate-entry" hidden aria-hidden="true">
+        <div class="gate-entry-label">ENTER YOUR PRIVATE CODE</div>
+        <div class="gate-dots" id="gate-dots" aria-label="已输入的密码位数"></div>
+        <div class="gate-keys" id="gate-keys" aria-label="数字密码键盘">
+          <button class="gate-key" data-key="1" type="button">1</button>
+          <button class="gate-key" data-key="2" type="button">2</button>
+          <button class="gate-key" data-key="3" type="button">3</button>
+          <button class="gate-key" data-key="4" type="button">4</button>
+          <button class="gate-key" data-key="5" type="button">5</button>
+          <button class="gate-key" data-key="6" type="button">6</button>
+          <button class="gate-key" data-key="7" type="button">7</button>
+          <button class="gate-key" data-key="8" type="button">8</button>
+          <button class="gate-key" data-key="9" type="button">9</button>
+          <button class="gate-key gate-key-fn" data-key="clear" type="button">清空</button>
+          <button class="gate-key" data-key="0" type="button">0</button>
+          <button class="gate-key gate-key-fn" data-key="del" type="button" aria-label="删除最后一位">⌫</button>
+        </div>
+        <button id="gate-cancel" class="gate-cancel" type="button">先等等</button>
+      </div>
+      <div class="gate-card-foot">
+        <span>MADE WITH CARE</span>
+        <span class="gate-foot-right"><span class="gate-foot-dot"></span> TAP THE LOCK</span>
+      </div>
+    </div>
+    <div class="gate-side-mark gate-side-mark-left" aria-hidden="true">WITH&nbsp; CARE</div>
+    <div class="gate-side-mark gate-side-mark-right" aria-hidden="true">OPEN&nbsp; SLOWLY</div>
+  </section>
+</div>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
