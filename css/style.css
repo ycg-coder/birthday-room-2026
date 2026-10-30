@@ -970,6 +970,12 @@ button:focus-visible {
   .toast { top: auto; bottom: calc(64px + env(safe-area-inset-bottom)); }
 }
 
+/* 横屏手机 / 矮视口：高度很矮时提示条会变成横向长条挡住画面 → 直接隐藏。
+   也覆盖 DevTools 横屏模拟（pointer 仍为 fine、宽度 720~920 的区间）。 */
+@media (max-height: 560px), (max-width: 920px) and (pointer: fine) {
+  #hint-bar { display: none !important; }
+}
+
 @media (max-width: 720px) {
   /* 手机端去掉常驻"探索提示条"，避免挡住屏幕中央的小屋画面 */
   #hint-bar { display: none !important; }
