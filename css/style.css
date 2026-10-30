@@ -383,20 +383,23 @@ html, body {
 
 /* ---------- Toast ---------- */
 .toast {
-  position: absolute; top: 26px; left: 50%;
-  transform: translate(-50%, -16px);
+  position: absolute; top: 26px; left: 14px; right: 14px;
+  margin: 0 auto; max-width: 360px;
+  transform: translateY(-16px);
   z-index: 40;
-  padding: 11px 22px;
+  padding: 11px 18px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 99px;
+  border-radius: 16px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(10px);
-  font-size: 14px; letter-spacing: 0.05em;
+  font-size: 14px; letter-spacing: 0.03em; line-height: 1.5;
+  text-align: center;
+  max-height: calc(100vh - 80px); overflow-y: auto;
   opacity: 0; pointer-events: none;
   transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1.4, 0.36, 1);
 }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.show { opacity: 1; transform: translateY(0); }
 
 /* ---------- 响应式 ---------- */
 @media (max-width: 720px) {
@@ -1003,7 +1006,7 @@ button:focus-visible {
   .hint-item { font-size: 10.5px; padding: 7px 9px; white-space: nowrap; }
   #control-bar { left: 50%; bottom: max(9px, env(safe-area-inset-bottom)); width: max-content; max-width: calc(100vw - 20px); gap: 6px; }
   .ctl-btn { min-height: 38px; padding: 9px 11px; font-size: 11px; }
-  .toast { top: max(10px, env(safe-area-inset-top)); font-size: 12px; padding: 10px 14px; }
+  .toast { top: max(10px, env(safe-area-inset-top)); bottom: auto; font-size: 12px; padding: 10px 14px; }
 
   .gate-wordmark { top: max(12px, env(safe-area-inset-top)); gap: 4px; }
   .gate-wordmark-main { font-size: 9px; letter-spacing: .22em; }
