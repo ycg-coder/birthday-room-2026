@@ -121,7 +121,8 @@ html, body {
 /* ---------- 交互提示条 ---------- */
 #hint-bar {
   position: absolute; bottom: 86px; left: 50%; transform: translateX(-50%); z-index: 20;
-  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+  display: flex; gap: 8px; flex-wrap: nowrap; justify-content: center;
+  max-width: calc(100vw - 24px); overflow-x: auto;
   padding: 10px 14px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
