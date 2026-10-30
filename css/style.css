@@ -962,7 +962,14 @@ button:focus-visible {
 .blindfold { background: radial-gradient(ellipse at 50% 48%, #1d1715 0%, #080706 72%); }
 .blind-text { color: #f2dfc7; letter-spacing: .22em; }
 
+/* 触摸设备（手机/平板，含横屏）：隐藏常驻"探索提示条"，避免遮挡小屋画面 */
+@media (pointer: coarse) {
+  #hint-bar { display: none !important; }
+}
+
 @media (max-width: 720px) {
+  /* 手机端去掉常驻"探索提示条"，避免挡住屏幕中央的小屋画面 */
+  #hint-bar { display: none !important; }
   #title-card { top: max(10px, env(safe-area-inset-top)); left: 10px; max-width: min(248px, calc(100vw - 20px)); padding: 10px 12px; }
   .title-emoji { width: 37px; height: 37px; font-size: 22px; }
   .title-row { gap: 9px; }
@@ -1160,7 +1167,8 @@ button:focus-visible {
 /* Keep the room legible on narrow phones; the 3D scene remains the visual focus. */
 @media (max-width: 520px) {
   #title-card { max-width: min(218px, calc(100vw - 20px)); }
-  #hint-bar { gap: 7px; }
-  #hint-bar .hint-item { white-space: nowrap; }
+  /* 控制栏在极窄屏改为可换行，避免 3 个中文按钮被挤出屏幕 */
+  #control-bar { flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 14px); bottom: max(8px, env(safe-area-inset-bottom)); }
+  .ctl-btn { padding: 8px 11px; font-size: 11px; min-height: 36px; }
   .inspect-panel { width:min(520px,calc(100vw - 24px)); }
 }
