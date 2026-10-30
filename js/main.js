@@ -164,48 +164,30 @@ function applyDiorama(world) {
   world.room.root.scale.setScalar(s);
   world.props.root.scale.setScalar(1);
 
-  // 4. 相机取景（响应式）：
-  //   · 横屏/桌面：精致四分之三俯视原机位；
-  //   · 竖屏（手机）：窄视场角会把小屋压成中央窄条、左侧窗户被切掉，
-  //     故后退+加大视场角+略向左偏，让整间屋（含左侧窗外）进画面——代价是小屋略小，
-  //     但竖屏能看到窗户惊喜，比窄条更实用。用户明确要“竖屏看窗外”。
+  // 4. 相机略偏正面、轻俯视，避免右侧墙面被透视拉成突出的大楔形。
+  // 竖屏不去改构图：参考图本身也是竖幅、右侧画架被裁掉一小部分，
+  // 强行后退/加大视场角只会让小屋在手机屏上缩成一小块（已实测），故保持固定机位。
   const cam = world.camera;
-  const isPortrait = () => window.innerHeight > window.innerWidth;
-  const camTarget = new THREE.Vector3(-0.04, 0.5, -0.03);
-  const frameCamera = () => {
-    const port = isPortrait();
-    if (port) {
-      cam.fov = 60;
-      const tgt = new THREE.Vector3(-0.24, 0.52, -0.05); // 略向左偏，让左侧窗户完整入镜
-      const dir = new THREE.Vector3(1.30, 1.05, 2.45);
-      const k = 1.6;                                    // 竖屏退远到窗户完整入镜（宽房间在竖屏天生偏窄条，不强行填满）
-      cam.position.set(tgt.x + dir.x * k, tgt.y + dir.y * k, tgt.z + dir.z * k);
-      cam.lookAt(tgt);
-    } else {
-      cam.fov = 44;
-      cam.position.set(1.25, 1.45, 2.45);              // 略后撤+左移，让构图居中、右侧暗带收窄
-      cam.lookAt(new THREE.Vector3(-0.04, 0.5, -0.03));
-    }
-    cam.updateProjectionMatrix();
-  };
-  frameCamera();
+  cam.fov = 44;
+  cam.position.set(1.35, 1.48, 2.35);
+  cam.lookAt(0.02, 0.48, -0.03);
+  cam.updateProjectionMatrix();
 
-  // 4b. 自由视角：轨道控制（拖动旋转 / 滚轮缩放），带阻尼。
+  // 4b. 自由视角：轨道控制（左键拖动旋转 / 右键平移 / 滚轮缩放），带阻尼。
   // 限制在室内前方可视半球：可以看向左侧窗户，但不允许绕到模型背后或平移出房间。
-  let lastPort = isPortrait();
-  const home = { pos: cam.position.clone(), target: isPortrait() ? new THREE.Vector3(-0.24, 0.52, -0.05) : camTarget.clone() };
+  const home = { pos: cam.position.clone(), target: new THREE.Vector3(0.02, 0.48, -0.03) };
   world.homeView = { pos: home.pos.clone(), target: home.target.clone() };
   if (world.renderer) {
-    const makeOpts = (port) => ({
+    const ctrlOpts = {
       enableDamping: true, dampingFactor: 0.085,
       enablePan: false, // 禁止把镜头平移到房屋外，避免看到墙体背面和模型边界
-      minDistance: 0.98, maxDistance: port ? 6.5 : 2.85,
+      minDistance: 0.98, maxDistance: 2.85,
       minPolarAngle: 0.22, maxPolarAngle: Math.PI * 0.455,
       minAzimuthAngle: -0.88, maxAzimuthAngle: 0.92, // 可看窗户，但不绕到房屋背面
-    });
+    };
     const makeControls = () => {
       const c = new OrbitControls(cam, world.renderer.domElement);
-      Object.assign(c, makeOpts(isPortrait()));
+      Object.assign(c, ctrlOpts);
       c.target.copy(home.target);
       c.update();
       return c;
@@ -871,15 +853,6 @@ function boot() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    // 横竖屏切换时按新比例重新取景（仅切方向时触发，避免拖动中频繁跳变）
-    const port = window.innerHeight > window.innerWidth;
-    if (port !== lastPort && world.controls) {
-      lastPort = port;
-      frameCamera();
-      world.controls.target.copy(isPortrait() ? new THREE.Vector3(-0.24, 0.52, -0.05) : camTarget);
-      world.controls.maxDistance = port ? 6.5 : 2.85;
-      world.controls.update();
-    }
   });
 
   /* ---------------- 加载遮罩 ---------------- */
