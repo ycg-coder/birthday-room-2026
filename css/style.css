@@ -965,6 +965,8 @@ button:focus-visible {
 /* 触摸设备（手机/平板，含横屏）：隐藏常驻"探索提示条"，避免遮挡小屋画面 */
 @media (pointer: coarse) {
   #hint-bar { display: none !important; }
+  /* 横屏高度窄，顶部居中的提示气泡会压住画面中央 → 改到屏幕底部、控制栏之上 */
+  .toast { top: auto; bottom: calc(64px + env(safe-area-inset-bottom)); }
 }
 
 @media (max-width: 720px) {
